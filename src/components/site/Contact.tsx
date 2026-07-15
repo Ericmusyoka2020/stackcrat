@@ -1,0 +1,193 @@
+import { useState } from "react";
+import { motion } from "motion/react";
+import { Phone, Mail, MapPin, Send, Twitter, Facebook, CheckCircle2 } from "lucide-react";
+
+const TikTokIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43V8.5a8.16 8.16 0 0 0 4.77 1.52V6.6a4.85 4.85 0 0 1-1.84.09z" />
+  </svg>
+);
+import { SectionHeader } from "./Section";
+
+export function Contact() {
+  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const sending = status === "sending";
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setStatus("sending");
+    setErrorMsg(null);
+    try {
+      const form = e.currentTarget;
+      const data = new FormData(form);
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: data,
+        headers: { Accept: "application/json" },
+      });
+      const json = await res.json().catch(() => ({}));
+      if (res.ok && (json.success ?? true)) {
+        setStatus("success");
+        form.reset();
+      } else {
+        throw new Error(json.message || "Submission failed");
+      }
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Submission failed");
+      setStatus("error");
+    }
+  };
+
+  return (
+    <section id="contact" className="relative py-28">
+      <div className="mx-auto max-w-7xl px-4">
+        <SectionHeader
+          eyebrow="Get in touch"
+          title={<>Let's build something <span className="text-gradient">remarkable</span></>}
+          description="Tell us about your project. We'll reply within 24 hours with next steps."
+        />
+
+        <div className="grid lg:grid-cols-5 gap-8">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="lg:col-span-2 space-y-4"
+          >
+            <div className="glass rounded-2xl p-6 space-y-5">
+              <a href="tel:+254710911645" className="flex items-start gap-4 group">
+                <span className="h-11 w-11 rounded-xl bg-gradient-brand inline-flex items-center justify-center glow shrink-0">
+                  <Phone className="h-5 w-5 text-primary-foreground" />
+                </span>
+                <div>
+                  <div className="text-xs uppercase tracking-widest text-muted-foreground">Phone</div>
+                  <div className="font-medium group-hover:text-brand-sky transition">+254 710 911 645</div>
+                </div>
+              </a>
+              <a href="mailto:stackcraftsstudio@gmail.com" className="flex items-start gap-4 group">
+                <span className="h-11 w-11 rounded-xl bg-gradient-brand inline-flex items-center justify-center glow shrink-0">
+                  <Mail className="h-5 w-5 text-primary-foreground" />
+                </span>
+                <div>
+                  <div className="text-xs uppercase tracking-widest text-muted-foreground">Email</div>
+                  <div className="font-medium group-hover:text-brand-sky transition break-all">stackcraftsstudio@gmail.com</div>
+                </div>
+              </a>
+              <div className="flex items-start gap-4">
+                <span className="h-11 w-11 rounded-xl bg-gradient-brand inline-flex items-center justify-center glow shrink-0">
+                  <MapPin className="h-5 w-5 text-primary-foreground" />
+                </span>
+                <div>
+                  <div className="text-xs uppercase tracking-widest text-muted-foreground">Location</div>
+                  <div className="font-medium">Nairobi, Kenya</div>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-white/10">
+                <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Follow us</div>
+                <div className="flex gap-2">
+                  {[
+                    { Icon: Twitter, href: "https://x.com/EricMusyok17", label: "Twitter" },
+                    { Icon: Facebook, href: "https://www.facebook.com/profile.php?id=61588936033870", label: "Facebook" },
+                    { Icon: TikTokIcon, href: "https://www.tiktok.com/@bughunter73?_r=1&_t=ZT-96Ty6nv08Oj", label: "TikTok" },
+                  ].map(({ Icon, href, label }) => (
+                    <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label} className="h-10 w-10 rounded-xl glass inline-flex items-center justify-center hover:bg-white/10 transition">
+                      <Icon className="h-4 w-4" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.form
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            onSubmit={onSubmit}
+            className="lg:col-span-3 glass-strong rounded-3xl p-8 space-y-5"
+          >
+            <input type="hidden" name="access_key" value="6ff52103-febf-48c8-83d9-64e549f2e411" />
+            <input type="hidden" name="from_name" value="Stack Crafts Studio Website" />
+            <input type="checkbox" name="botcheck" className="hidden" style={{ display: "none" }} tabIndex={-1} autoComplete="off" />
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Field label="Full name" name="name" placeholder="Enter your full name" />
+              <Field label="Email" name="email" type="email" placeholder="Enter your email" />
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Field label="Phone" name="phone" type="tel" placeholder="Enter phone number" />
+              <Field label="Subject" name="subject" placeholder="What do you need?" />
+            </div>
+            <div>
+              <label className="text-sm text-muted-foreground">Project details</label>
+              <textarea
+                name="message"
+                required
+                rows={5}
+                placeholder="Tell us about your goals, timeline and budget…"
+                className="mt-1.5 w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 outline-none focus:border-brand-gold/60 focus:bg-white/10 transition resize-none"
+              />
+            </div>
+
+            {status === "success" && (
+              <div className="flex items-center gap-3 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-emerald-300">
+                <CheckCircle2 className="h-5 w-5 shrink-0" />
+                <span>Form submitted successfully! We'll get back to you within 24 hours.</span>
+              </div>
+            )}
+            {status === "error" && (
+              <div className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-red-300">
+                Something went wrong. Please try again or email us directly.
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={sending}
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-brand px-6 py-3 font-medium text-primary-foreground glow hover:opacity-95 transition disabled:opacity-60"
+              >
+                <Send className="h-4 w-4" />
+                {sending ? "Sending…" : "Send message"}
+              </button>
+              <a
+                href="https://wa.me/254710911645"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl px-6 py-3 font-medium bg-[oklch(0.72_0.18_150)] text-black hover:opacity-90 transition"
+              >
+                <WhatsAppIcon /> WhatsApp Us
+              </a>
+            </div>
+          </motion.form>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Field({ label, name, type = "text", placeholder, defaultValue }: { label: string; name: string; type?: string; placeholder?: string; defaultValue?: string }) {
+  return (
+    <div>
+      <label className="text-sm text-muted-foreground">{label}</label>
+      <input
+        required
+        name={name}
+        type={type}
+        placeholder={placeholder}
+        defaultValue={defaultValue}
+        className="mt-1.5 w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 outline-none focus:border-brand-gold/60 focus:bg-white/10 transition"
+      />
+    </div>
+  );
+}
+
+function WhatsAppIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A11.9 11.9 0 0 0 12 0C5.4 0 0 5.4 0 12c0 2.1.6 4.2 1.6 6L0 24l6.2-1.6c1.7.9 3.7 1.4 5.8 1.4 6.6 0 12-5.4 12-12 0-3.2-1.3-6.2-3.5-8.3zM12 21.8c-1.8 0-3.6-.5-5.2-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.8 9.8 0 0 1 2.2 12C2.2 6.6 6.6 2.2 12 2.2S21.8 6.6 21.8 12 17.4 21.8 12 21.8zm5.4-7.3c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.7.1s-.8 1-.9 1.2c-.2.2-.3.2-.6.1-.9-.4-1.8-.9-2.7-2-.7-.8-1.1-1.7-1.3-2-.1-.3 0-.4.1-.5l.4-.5.3-.5c.1-.2.1-.3 0-.5l-.7-1.7c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.4-.2.3-.9.9-.9 2.2 0 1.3.9 2.6 1.1 2.8.1.2 1.8 2.8 4.4 3.9.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.3-.6-.5z"/></svg>
+  );
+}
